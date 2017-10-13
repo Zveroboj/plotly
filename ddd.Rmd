@@ -1,0 +1,133 @@
+---
+title: "Employee Engagement"
+author: "Zveroboj"
+date: "October 12, 2017"
+output:
+  slidy_presentation: default
+  ioslides_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+ 
+
+## Employee Engagement
+<p>
+Employee engagement is one of the key labor force attributes contributing to companies' economic perfomance. Based on publicly available data, there are three key drivers of engagement:
+
+```{r echo=FALSE, include=FALSE}
+library(dplyr)
+library(plotly)
+library(ggplot2)
+library(stringr)
+```
+
+```{r echo=FALSE}
+dt<- read.csv("C:/Users/opoli/Documents/Orna/Engagement Data for Demo Site (18 Jan 2017).csv")
+
+for (i in 1:ncol(dt)){
+     dt[,i]<-as.numeric(dt[,i])
+}
+
+dt<-dt[,2:ncol(dt)]
+
+t<-numeric(14)
+
+for(i in 2:15){
+     cr<- cor(dt$Engagement_Outcome, dt[,i])
+     t[i-1]<-cr
+}
+
+cor.table<-as.data.frame(cbind(names(dt[,2:ncol(dt)]),t))
+names(cor.table)<-c("Driver","R Coeff.")
+cor.table$`R Coeff.`<-as.numeric(as.character(cor.table$`R Coeff.`))
+
+a.cor.table<-arrange(cor.table, desc(`R Coeff.`))
+
+a.cor.table$Driver<-gsub("___"," ",a.cor.table$Driver)
+a.cor.table$Driver<-gsub("__"," ",a.cor.table$Driver)
+a.cor.table$Driver<-gsub("_"," ",a.cor.table$Driver)
+a.cor.table$Driver[2:4]<-gsub("Leadership ","",a.cor.table$Driver[2:4])
+a.cor.table$Driver[6:14]<-gsub("Leadership ","",a.cor.table$Driver[6:14])
+
+top1.name<-a.cor.table[1,1]
+top2.name<-a.cor.table[2,1]
+top3.name<-a.cor.table[3,1]
+
+bottom1.name<-a.cor.table[14,1]
+bottom2.name<-a.cor.table[13,1]
+bottom3.name<-a.cor.table[12,1]
+
+dte<-dt
+names(dte)<-c("Engagement Outcome",as.character(a.cor.table$Driver))
+```
+<br>
+
+- `r top1.name`
+
+- `r top2.name`
+
+- `r top3.name`
+
+## Top-Three Drivers of Engagement
+
+```{r pressure, echo=FALSE, warning=FALSE, fig.align='center'}
+library(plotly)
+
+line1<-lm(`Engagement Outcome`~`Leadership Overall`, data=dte)
+line2<-lm(`Engagement Outcome`~`Empowerment`, data=dte)
+line3<-lm(`Engagement Outcome`~`Performance Based Rewards`, data=dte)
+
+subplot(plot_ly(dte, x= ~`Leadership Overall`, 
+                y= ~`Engagement Outcome`,
+               type="scatter", mode='markers',
+               name=paste(top1.name," vs. Engagement Score"))%>%
+             add_trace(y=~line1$fitted.values,
+                       mode='lines',
+                       name="Fitted Line", line = list(color = 'navy'),
+                       hoverinfo = "text",
+                       text = ~paste('R. Sqrd = ',round(summary(line1)$r.squared,2))),
+        plot_ly(dte, x= ~`Empowerment`,
+                y= ~`Engagement Outcome`,
+                type="scatter", mode='markers',
+                name=paste(top2.name," vs. Engagement Score"))%>%
+             add_trace(y=~line2$fitted.values,
+                       mode='lines',
+                       name="Fitted Line", line = list(color = 'navy'),
+                       hoverinfo = "text",
+                       text = ~paste('R. Sqrd = ',round(summary(line2)$r.squared,2))),
+        plot_ly(dte, x= ~`Performance Based Rewards`,
+                y= ~`Engagement Outcome`,
+                type="scatter", mode='markers',
+                name=paste(top3.name," vs. Engagement Score"))%>%
+             add_trace(y=~line3$fitted.values,
+                       mode='lines',
+                       name="Fitted Line", line = list(color = 'navy'),
+                       hoverinfo = "text",
+                       text = ~paste('R. Sqrd = ',round(summary(line3)$r.squared,2))),
+        margin = 0.05)%>%
+     layout(showlegend = FALSE, 
+            title = "Top Three Drivers", 
+            yaxis = list(title = "Engagement Score", showgrid = TRUE),
+            xaxis = list(title = top1.name),
+            yaxis2 = list(title = " ", showgrid = TRUE),
+            xaxis2 = list(title = top2.name),
+            yaxis3 = list(title = " ", showgrid = TRUE),
+            xaxis3 = list(title = top3.name),
+            autosize = T)
+```
+
+## Employee Engagement: All Drivers
+
+```{r cars, echo = FALSE, warning=FALSE, fig.align='center'}
+plot_ly(a.cor.table, x= ~ reorder(Driver,desc(`R Coeff.`)),
+        y= ~`R Coeff.`, type = "bar")%>%
+     layout(xaxis = list(title = "", tickangle = -90),
+            yaxis=list(title="Correlation Coeff. (R Pearson)"),
+            title="Impact of Drivers of Employee Engagement",
+                        margin = list(b = 200))
+```
+
+
