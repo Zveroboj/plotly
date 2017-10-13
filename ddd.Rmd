@@ -25,7 +25,7 @@ library(stringr)
 ```
 
 ```{r echo=FALSE}
-dt<- read.csv("C:/Users/opoli/Documents/Orna/Engagement Data for Demo Site (18 Jan 2017).csv")
+dt<- read.csv("Engagement Data for Demo Site (18 Jan 2017).csv")
 
 for (i in 1:ncol(dt)){
      dt[,i]<-as.numeric(dt[,i])
